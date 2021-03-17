@@ -1,168 +1,191 @@
 <template>
   <div class="container">
-    <CBox
-      v-bind="mainStyles[colorMode]"
-      d="flex"
+    <CFlex
+      v-if="isLoading"
+      align="center"
+      justify="center"
       w="100vw"
       h="100vh"
-      flex-dir="column"
-      justify-content="center"
+      zIndex="2"
     >
-      <CHeading text-align="center" mb="4">
-        ⚡️ Hello chakra-ui/vue
-      </CHeading>
-      <CFlex justify="center" direction="column" align="center">
-        <CBox mb="3">
-          <CIconButton
-            mr="3"
-            :icon="colorMode === 'light' ? 'moon' : 'sun'"
-            :aria-label="`Switch to ${
-              colorMode === 'light' ? 'dark' : 'light'
-            } mode`"
-            @click="toggleColorMode"
-          />
-          <CButton
-            left-icon="info"
-            variant-color="blue"
-            @click="showToast"
-          >
-            Show Toast
-          </CButton>
-        </CBox>
-        <CAvatarGroup>
-          <CAvatar
-            name="Evan You"
-            alt="Evan You"
-            src="https://pbs.twimg.com/profile_images/1206997998900850688/cTXTQiHm_400x400.jpg"
-          >
-            <CAvatarBadge size="1.0em" bg="green.500" />
-          </CAvatar>
-          <CAvatar
-            name="Jonathan Bakebwa"
-            alt="Jonathan Bakebwa"
-            src="https://res.cloudinary.com/xtellar/image/upload/v1572857445/me_zqos4e.jpg"
-          >
-            <CAvatarBadge size="1.0em" bg="green.500" />
-          </CAvatar>
-          <CAvatar
-            name="Segun Adebayo"
-            alt="Segun Adebayo"
-            src="https://pbs.twimg.com/profile_images/1169353373012897802/skPUWd6e_400x400.jpg"
-          >
-            <CAvatarBadge size="1.0em" bg="green.500" />
-          </CAvatar>
-          <CAvatar src="pop">
-            <CAvatarBadge size="1.0em" border-color="papayawhip" bg="tomato" />
-          </CAvatar>
-        </CAvatarGroup>
-        <CButton
-          left-icon="close"
-          variant-color="red"
-          mt="3"
-          @click="showModal = true"
-        >
-          Delete Account
-        </CButton>
-        <CModal :is-open="showModal">
-          <CModalOverlay />
-          <CModalContent>
-            <CModalHeader>Are you sure?</CModalHeader>
-            <CModalBody>Deleting user cannot be undone</CModalBody>
-            <CModalFooter>
-              <CButton @click="showModal = false">
-                Cancel
-              </CButton>
-              <CButton
-                margin-left="3"
-                variant-color="red"
-                @click="showModal = false"
-              >
-                Delete User
-              </CButton>
-            </CModalFooter>
-            <CModalCloseButton @click="showModal = false" />
-          </CModalContent>
-        </CModal>
+      <CSpinner size="xl" />
+    </CFlex>
+
+    <CFlex
+      v-if="!isLoading && isError"
+      direction="column"
+      align="center"
+      justify="center"
+      w="100vw"
+      h="100vh"
+    >
+      <CText fontSize="2rem" fontWeight="700" my="4"
+        >Something went wrong!</CText
+      >
+      <CButton @click="refreshPage">Try again</CButton>
+    </CFlex>
+
+    <CGrid v-if="!isLoading && !isError" gridTemplateRows="fit-content 1fr">
+      <CFlex m="10px 0" justifySelf="center">
+        <CText fontWeight="700" fontSize="2rem"><h1>Vendor Machine</h1></CText>
       </CFlex>
-    </CBox>
+
+      <CFlex justify="center" :mx="['10px', '30px', '60px', 'auto']">
+        <CGrid
+          p="20px"
+          h="100%"
+          maxWidth="1024px"
+          :gridTemplateColumns="[
+            'repeat(3, 1fr)',
+            'repeat(3, 1fr)',
+            'repeat(3, 1fr)',
+            'repeat(4, 1fr)',
+          ]"
+          gap="20px"
+        >
+          <ProductCard
+            v-for="product in refinedProduct"
+            :key="product.name"
+            :imageURL="product.photo"
+            :name="product.name"
+            :quantity="product.quantity"
+            @purchase="alertPopup($event)"
+          />
+        </CGrid>
+      </CFlex>
+    </CGrid>
+
+    <ConfirmPopup
+      :isOpen="isOpen"
+      :productName="purchaseItem.name"
+      @closeDialog="closeDialog($event)"
+      @purchase="purchase(purchaseItem.name)"
+    />
   </div>
 </template>
 
-<script lang="js">
+<script>
 import {
-  CBox,
-  CButton,
-  CAvatarGroup,
-  CAvatar,
-  CAvatarBadge,
-  CModal,
-  CModalContent,
-  CModalOverlay,
-  CModalHeader,
-  CModalFooter,
-  CModalBody,
-  CModalCloseButton,
-  CIconButton,
+  CGrid,
   CFlex,
-  CHeading
-} from '@chakra-ui/vue'
+  CText,
+  CBox,
+  CAlertDialog,
+  CButton,
+  CAlertDialogHeader,
+  CAlertDialogBody,
+  CAlertDialogFooter,
+  CAlertDialogOverlay,
+  CAlertDialogContent,
+  CSpinner,
+} from "@chakra-ui/vue"
 
 export default {
-  name: 'App',
+  name: "App",
   components: {
+    CGrid,
+    CFlex,
+    CText,
     CBox,
     CButton,
-    CAvatarGroup,
-    CAvatar,
-    CAvatarBadge,
-    CModal,
-    CModalContent,
-    CModalOverlay,
-    CModalHeader,
-    CModalFooter,
-    CModalBody,
-    CModalCloseButton,
-    CIconButton,
-    CFlex,
-    CHeading
+    CAlertDialog,
+    CAlertDialogHeader,
+    CAlertDialogBody,
+    CAlertDialogFooter,
+    CAlertDialogOverlay,
+    CAlertDialogContent,
+    CSpinner,
   },
-  inject: ['$chakraColorMode', '$toggleColorMode'],
-  data () {
+  data() {
     return {
-      showModal: false,
-      mainStyles: {
-        dark: {
-          bg: 'gray.700',
-          color: 'whiteAlpha.900'
-        },
-        light: {
-          bg: 'white',
-          color: 'gray.900'
-        }
-      }
+      products: null,
+      isOpen: false,
+      purchaseItem: {
+        name: "",
+      },
+      isError: false,
+      isLoading: false,
+    }
+  },
+  async mounted() {
+    try {
+      this.isLoading = true
+      await this.getProducts()
+    } finally {
+      this.isLoading = false
     }
   },
   computed: {
-    colorMode () {
-      return this.$chakraColorMode()
+    refinedProduct: function () {
+      if (Array.isArray(this.products) && this.products.length > 0) {
+        return this.products.map(product => ({
+          ...product,
+          photo: product.photo
+            ? product.photo
+            : require("@/assets/no-image.jpg"),
+        }))
+      }
     },
-    theme () {
-      return this.$chakraTheme()
-    },
-    toggleColorMode () {
-      return this.$toggleColorMode
-    }
   },
   methods: {
-    showToast () {
-      this.$toast({
-        title: 'Account created.',
-        description: "We've created your account for you.",
-        status: 'success',
-        duration: 10000,
-        isClosable: true
-      })
-    }
-  }
+    alertPopup: function ({ name }) {
+      this.purchaseItem.name = name
+
+      this.openDialog()
+    },
+    closeDialog() {
+      this.isOpen = false
+    },
+    openDialog() {
+      this.isOpen = true
+    },
+    async getProducts() {
+      try {
+        if (!this.$route.query.vendor_id) {
+          return this.$nuxt.error({
+            statusCode: 404,
+            message: "No vendor_id provide in req.query",
+          })
+        }
+
+        const response = await this.$axios.$get(
+          `http://localhost/product?vendor_id=${this.$route.query.vendor_id}`
+        )
+
+        this.products = response.products
+
+        this.isError = false
+      } catch (error) {
+        this.isError = true
+      }
+    },
+    async purchase(name) {
+      try {
+        this.closeDialog()
+
+        this.isLoading = true
+
+        const product = this.products.find(product => product.name === name)
+
+        await this.$axios.$patch(
+          `http://localhost/product/${product._id}?vendor_id=${this.$route.query.vendor_id}`
+        )
+      } catch (error) {
+        alert("purchase error!")
+      }
+
+      await this.getProducts()
+
+      this.isLoading = false
+    },
+    refreshPage: async function () {
+      try {
+        this.isLoading = true
+        await this.getProducts()
+      } finally {
+        this.isLoading = false
+      }
+    },
+  },
 }
 </script>
