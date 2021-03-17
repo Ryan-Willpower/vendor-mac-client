@@ -1,20 +1,9 @@
-# vendor-client
+# Document
 
-## Build Setup
+## Design
 
-```bash
-# install dependencies
-$ yarn install
+[Click here to view design idea on Freehand](https://projects.invisionapp.com/freehand/document/R1av3fdfM)
 
-# serve with hot reload at localhost:3000
-$ yarn dev
+## Flow
 
-# build for production and launch server
-$ yarn build
-$ yarn start
-
-# generate static project
-$ yarn generate
-```
-
-For detailed explanation on how things work, check out [Nuxt.js docs](https://nuxtjs.org).
+[Click here to view the flow](https://www.figma.com/file/TLfkrdN1qTmyFAlzKVCW3y/vendor-client-flow?node-id=0%3A1)
