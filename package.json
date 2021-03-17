@@ -16,6 +16,7 @@
     "@nuxtjs/emotion": "^0.1.0",
     "@nuxtjs/pwa": "^3.3.5",
     "core-js": "^3.8.3",
+    "lodash": "^4.17.21",
     "nuxt": "^2.14.12"
   },
   "devDependencies": {
